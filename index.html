@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Fund Allocation Tool</title>
+    <!-- Tailwind CSS CDN for quick and responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind CSS configuration for custom colors, fonts, and extended properties
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'], // Define Inter font
+                    },
+                    colors: {
+                        primary: '#4F46E5', // A vibrant blue for primary actions
+                        secondary: '#6EE7B7', // A lighter green for accents
+                        background: '#F9FAFB', // Light gray background
+                        card: '#FFFFFF', // White for cards/panels
+                        textdark: '#1F2937', // Dark gray for main text
+                        textlight: '#4B5563', // Lighter gray for secondary text
+                        danger: '#EF4444', // Red for alerts/errors
+                        success: '#22C55E', // Green for positive alerts
+                        warning: '#F59E0B', // Orange for warnings
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts - Inter for a modern, clean look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+        /* Custom styles for the scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+            cursor: pointer;
+        }
+
+        /* Ensure input focus is visually distinct */
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3); /* Primary color shadow */
+            border-color: #4F46E5; /* Primary color border */
+        }
+
+        /* Custom slider track and thumb styles */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            outline: none;
+            border-radius: 5px;
+            transition: opacity .2s;
+            margin: 10px 0; /* Add some vertical margin */
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4F46E5; /* Primary color */
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+            margin-top: -6px; /* Center thumb vertically */
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4F46E5; /* Primary color */
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+        }
+
+        input[type="range"]:active::-webkit-slider-thumb {
+            cursor: grabbing;
+        }
+        input[type="range"]:active::-moz-range-thumb {
+            cursor: grabbing;
+        }
+
+        /* Styling for the alert box */
+        .alert-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .alert-box.alert-success {
+            background-color: #D1FAE5; /* green-100 */
+            color: #065F46; /* green-800 */
+            border: 1px solid #34D399; /* green-400 */
+        }
+        .alert-box.alert-warning {
+            background-color: #FEF3C7; /* yellow-100 */
+            color: #92400E; /* yellow-800 */
+            border: 1px solid #FBBF24; /* yellow-400 */
+        }
+        .alert-box.alert-danger {
+            background-color: #FEE2E2; /* red-100 */
+            color: #991B1B; /* red-800 */
+            border: 1px solid #F87171; /* red-400 */
+        }
+    </style>
+</head>
+<body class="font-inter bg-background text-textdark min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-card shadow-sm py-4 px-6 md:px-8 flex items-center justify-between z-10">
+        <div class="flex items-center space-x-2">
+            <!-- Logo Image -->
+            <img src="https://placehold.co/40x40/8A2BE2/FFFFFF?text=Logo" onerror="this.onerror=null;this.src='uploaded:Untitled (5).png-9333cd27-2f3e-45e7-8881-e5891066559e';" alt="Smart Fund Allocation Logo" class="w-10 h-10 rounded-lg">
+            <h1 class="text-2xl font-bold text-textdark">Smart Fund Allocation</h1>
+        </div>
+        <!-- Navigation (optional, can be expanded) -->
+        <nav class="hidden md:block">
+            <ul class="flex space-x-6">
+                <li><a href="#" class="text-textlight hover:text-primary transition-colors duration-200">About</a></li>
+                <li><a href="#" class="text-textlight hover:text-primary transition-colors duration-200">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content Area - Two-column layout on larger screens -->
+    <main class="flex-1 flex flex-col lg:flex-row p-4 md:p-8 space-y-8 lg:space-y-0 lg:space-x-8 overflow-hidden">
+
+        <!-- Left Panel: Input Section -->
+        <section class="lg:w-2/5 xl:w-1/3 bg-card rounded-xl shadow-lg p-6 flex flex-col overflow-y-auto">
+            <h2 class="text-xl md:text-2xl font-semibold mb-6 text-textdark">Your Financial Parameters</h2>
+
+            <!-- Fixed Loan Parameters Display -->
+            <div class="mb-5 p-3 bg-gray-50 rounded-md">
+                <p class="text-sm font-medium text-textlight mb-1">Fixed Loan Interest Rate: <span class="font-semibold text-textdark">8% Annual</span></p>
+                <p class="text-sm font-medium text-textlight">Fixed Loan Tenure: <span class="font-semibold text-textdark">30 Years</span></p>
+            </div>
+
+            <!-- Loan Amount -->
+            <div class="mb-5">
+                <label for="loanAmount" class="block text-sm font-medium text-textlight mb-2">Loan Amount (₹)</label>
+                <input type="number" id="loanAmount" value="5000000" min="100000" max="50000000" step="100000"
+                       class="w-full p-3 border border-gray-300 rounded-md shadow-sm text-lg font-medium">
+                <input type="range" id="loanAmountSlider" value="5000000" min="100000" max="50000000" step="100000"
+                       class="w-full">
+            </div>
+
+            <!-- Monthly Budget -->
+            <div class="mb-5">
+                <label for="monthlyBudget" class="block text-sm font-medium text-textlight mb-2">Monthly Budget (₹)</label>
+                <input type="number" id="monthlyBudget" value="70000" min="10000" step="1000"
+                       class="w-full p-3 border border-gray-300 rounded-md shadow-sm text-lg font-medium">
+            </div>
+
+            <!-- Risk Appetite -->
+            <div class="mb-5">
+                <label for="riskAppetite" class="block text-sm font-medium text-textlight mb-2">Risk Appetite</label>
+                <select id="riskAppetite"
+                        class="w-full p-3 border border-gray-300 rounded-md shadow-sm text-lg font-medium bg-white">
+                    <option value="low">Low (6% Expected Return)</option>
+                    <option value="moderate" selected>Moderate (9% Expected Return)</option>
+                    <option value="high">High (12% Expected Return)</option>
+                </select>
+            </div>
+
+            <!-- Allocation Goal -->
+            <div class="mb-5">
+                <label for="allocationGoal" class="block text-sm font-medium text-textlight mb-2">Allocation Goal</label>
+                <select id="allocationGoal"
+                        class="w-full p-3 border border-gray-300 rounded-md shadow-sm text-lg font-medium bg-white">
+                    <option value="netZeroInterest">1. Achieve Net Zero Interest</option>
+                    <option value="minTimeNetZero">2. Minimum Time to Net Zero Interest</option>
+                    <option value="maximizeGrowth">3. Maximize Growth in X Years</option>
+                </select>
+            </div>
+
+            <!-- Optimization Period (conditionally displayed) -->
+            <div id="optimizationPeriodContainer" class="mb-6 hidden">
+                <label for="optimizationPeriod" class="block text-sm font-medium text-textlight mb-2">Optimization Period (Years)</label>
+                <input type="number" id="optimizationPeriod" value="10" min="1" max="30"
+                       class="w-full p-3 border border-gray-300 rounded-md shadow-sm text-lg font-medium">
+            </div>
+
+            <!-- Action Button -->
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <button id="calculateBtn" class="bg-primary text-white py-3 px-6 rounded-lg font-medium text-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 w-full">
+                    Calculate Allocation
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Panel: Results & Guidance Section -->
+        <section class="flex-1 bg-card rounded-xl shadow-lg p-6 flex flex-col overflow-y-auto">
+            <h2 class="text-xl md:text-2xl font-semibold mb-6 text-textdark">Results & Smart Allocation</h2>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center p-8">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
+                <p class="mt-4 text-lg text-primary">Calculating...</p>
+            </div>
+
+            <!-- Key Metrics Display -->
+            <div id="resultsDisplay" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-primary/10 rounded-lg p-4 shadow-sm">
+                    <h3 class="text-sm font-semibold text-textlight mb-2">Monthly EMI</h3>
+                    <p id="emiResult" class="text-2xl font-bold text-primary">₹ 0</p>
+                </div>
+                <div class="bg-secondary/10 rounded-lg p-4 shadow-sm">
+                    <h3 class="text-sm font-medium text-textlight mb-2">Monthly Investment</h3>
+                    <p id="monthlyInvestmentResult" class="text-2xl font-bold text-secondary">₹ 0</p>
+                    <p class="text-xs text-textlight mt-1">(Calculated from Budget - EMI)</p>
+                </div>
+                <div id="totalInterestContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm">
+                    <h3 class="text-sm font-semibold text-textlight mb-2">Total Loan Interest Payable</h3>
+                    <p id="totalInterestResult" class="text-xl font-bold text-textdark">₹ 0</p>
+                </div>
+                <div id="investmentFVContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm">
+                    <h3 class="text-sm font-semibold text-textlight mb-2">Estimated Investment Future Value</h3>
+                    <p id="investmentFutureValueResult" class="text-xl font-bold text-textdark">₹ 0</p>
+                </div>
+                <div id="minTimeContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm hidden">
+                    <h3 class="text-sm font-semibold text-textlight mb-2">Minimum Time to Net Zero</h3>
+                    <p id="minTimeResult" class="text-xl font-bold text-textdark">-- Years</p>
+                </div>
+                <div id="netWealthContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm hidden">
+                    <h3 class="text-sm font-semibold text-textlight mb-2">Net Wealth at Period End</h3>
+                    <p id="netWealthResult" class="text-xl font-bold text-textdark">₹ 0</p>
+                </div>
+            </div>
+
+            <!-- Smart Guidance Alert -->
+            <div id="guidanceAlert" class="alert-box alert-warning hidden">
+                <!-- Icon will be dynamically added here -->
+                <p id="alertMessage"></p>
+            </div>
+
+            <!-- Chart for Visual Comparison -->
+            <div class="flex-1 min-h-[300px] flex items-center justify-center relative mt-6">
+                <canvas id="comparisonChart" class="w-full h-full"></canvas>
+                <div id="chartMessage" class="absolute bg-white bg-opacity-90 p-4 rounded-lg shadow-lg text-center text-textlight text-lg hidden">
+                    Select an Allocation Goal and input your parameters to see projections here!
+                </div>
+            </div>
+
+            <!-- Detailed Insights -->
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold text-textdark mb-3">Detailed Insights:</h3>
+                <div id="detailedInsights" class="bg-gray-50 rounded-lg p-4 text-textlight leading-relaxed">
+                    <p>Select an allocation goal and input your parameters to receive tailored financial guidance.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-textdark text-gray-300 py-4 px-8 text-center text-sm">
+        &copy; 2025 Smart Fund Allocation Tool. All rights reserved.
+    </footer>
+
+    <script>
+        // --- Global Variables and Constants ---
+        let comparisonChartInstance; // Stores the Chart.js instance
+        const FIXED_LOAN_INTEREST_RATE = 8; // 8% Annual
+        const FIXED_LOAN_TENURE_YEARS = 30; // 30 Years
+        const riskAppetiteReturns = {
+            low: 6,
+            moderate: 9,
+            high: 12
+        };
+
+        // --- Helper Function: Format Currency ---
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        };
+
+        // --- Real Backend API Call (Replaces the mock callBackendAPI function) ---
+        async function callBackendAPI(endpoint, data) {
+            console.log(`Making API call to: ${endpoint} with data:`, data);
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            document.getElementById('resultsDisplay').classList.add('hidden');
+            document.getElementById('guidanceAlert').classList.add('hidden');
+            document.getElementById('chartMessage').classList.add('hidden');
+            document.getElementById('detailedInsights').innerHTML = '<p>Calculating your personalized allocation...</p>';
+
+            try {
+                // IMPORTANT: For local testing, keep this as http://localhost:5000
+                // When deployed, you would replace 'http://localhost:5000' with your actual Render backend URL
+                const response = await fetch(`http://localhost:5000${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const responseData = await response.json();
+                console.log("Backend response:", responseData);
+
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('resultsDisplay').classList.remove('hidden');
+
+                return responseData;
+
+            } catch (error) {
+                console.error("Backend API call failed:", error);
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                document.getElementById('resultsDisplay').classList.remove('hidden'); // Show results display even on error
+                throw error; // Re-throw to be caught by performCalculation
+            }
+        }
+
+        /**
+         * Clears all calculation results and hides alerts.
+         */
+        function clearResults() {
+            document.getElementById('emiResult').textContent = formatCurrency(0);
+            document.getElementById('monthlyInvestmentResult').textContent = formatCurrency(0);
+            document.getElementById('totalInterestResult').textContent = formatCurrency(0);
+            document.getElementById('investmentFutureValueResult').textContent = formatCurrency(0);
+            document.getElementById('minTimeResult').textContent = '-- Years';
+            document.getElementById('netWealthResult').textContent = formatCurrency(0);
+
+            document.getElementById('totalInterestContainer').classList.remove('hidden');
+            document.getElementById('investmentFVContainer').classList.remove('hidden');
+            document.getElementById('minTimeContainer').classList.add('hidden');
+            document.getElementById('netWealthContainer').classList.add('hidden');
+
+
+            document.getElementById('guidanceAlert').classList.add('hidden');
+            document.getElementById('detailedInsights').innerHTML = '<p>Select an allocation goal and input your parameters to receive tailored financial guidance.</p>';
+            document.getElementById('chartMessage').classList.remove('hidden'); // Show chart message
+            if (comparisonChartInstance) {
+                comparisonChartInstance.destroy(); // Destroy existing chart
+                comparisonChartInstance = null;
+            }
+        }
+
+        /**
+         * Updates the Chart.js visualization based on the selected goal.
+         */
+        function updateComparisonChart(goal, data) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            let chartConfig = {};
+
+            document.getElementById('chartMessage').classList.add('hidden'); // Hide message if data is present
+
+            if (comparisonChartInstance) {
+                comparisonChartInstance.destroy(); // Destroy existing chart
+            }
+
+            if (data.status === "not_achievable" || (data.chartData.loanInterest === 0 && data.chartData.investmentGain === 0 && data.chartData.investmentFV === 0 && data.chartData.remainingLoan === 0)) {
+                document.getElementById('chartMessage').classList.remove('hidden');
+                return;
+            }
+
+            if (goal === 'netZeroInterest' || goal === 'minTimeNetZero') {
+                chartConfig = {
+                    type: 'bar',
+                    data: {
+                        labels: ['Loan Interest Paid', 'Investment Wealth Gained'],
+                        datasets: [{
+                            label: 'Amount (₹)',
+                            data: [data.chartData.loanInterest, data.chartData.investmentGain],
+                            backgroundColor: [
+                                'rgba(239, 68, 68, 0.7)', // Red for interest
+                                'rgba(34, 197, 94, 0.7)'  // Green for wealth gained
+                            ],
+                            borderColor: [
+                                'rgba(239, 68, 68, 1)',
+                                'rgba(34, 197, 94, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Loan Interest vs. Investment Gain', font: { size: 16 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.y !== null) { label += formatCurrency(context.parsed.y); }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Amount (₹)' },
+                                ticks: { callback: formatCurrency }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                };
+            } else if (goal === 'maximizeGrowth') {
+                chartConfig = {
+                    type: 'bar',
+                    data: {
+                        labels: ['Investment Future Value', 'Remaining Loan Balance'],
+                        datasets: [{
+                            label: 'Amount (₹)',
+                            data: [data.chartData.investmentFV, data.chartData.remainingLoan],
+                            backgroundColor: [
+                                'rgba(34, 197, 94, 0.7)', // Green for investment FV
+                                'rgba(79, 70, 229, 0.7)'  // Primary blue for remaining loan
+                            ],
+                            borderColor: [
+                                'rgba(34, 197, 94, 1)',
+                                'rgba(79, 70, 229, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: `Financial Position in ${data.optimizationPeriodYears} Years`, font: { size: 16 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.y !== null) { label += formatCurrency(context.parsed.y); }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Amount (₹)' },
+                                ticks: { callback: formatCurrency }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                };
+            }
+
+            comparisonChartInstance = new Chart(ctx, chartConfig);
+        }
+
+        /**
+         * Updates the UI with results from the backend and displays appropriate guidance.
+         */
+        function displayResults(goal, data) {
+            clearResults(); // Clear previous results and hide specific containers
+
+            document.getElementById('emiResult').textContent = formatCurrency(data.monthlyEMI);
+            document.getElementById('monthlyInvestmentResult').textContent = formatCurrency(data.monthlyInvestment);
+
+            if (goal === 'netZeroInterest' || goal === 'minTimeNetZero') {
+                document.getElementById('totalInterestContainer').classList.remove('hidden');
+                document.getElementById('investmentFVContainer').classList.remove('hidden');
+                document.getElementById('totalInterestResult').textContent = formatCurrency(data.totalLoanInterestPayable);
+                document.getElementById('investmentFutureValueResult').textContent = formatCurrency(data.estimatedInvestmentFutureValue);
+            }
+
+            if (goal === 'minTimeNetZero') {
+                document.getElementById('minTimeContainer').classList.remove('hidden');
+                document.getElementById('minTimeResult').textContent = data.minTimeYears !== -1 ? `${data.minTimeYears} Years` : 'Not Achievable';
+            }
+
+            if (goal === 'maximizeGrowth') {
+                document.getElementById('totalInterestContainer').classList.add('hidden'); // Hide if not relevant for this goal
+                document.getElementById('investmentFVContainer').classList.remove('hidden');
+                document.getElementById('netWealthContainer').classList.remove('hidden');
+                document.getElementById('investmentFutureValueResult').textContent = formatCurrency(data.estimatedInvestmentFutureValue);
+                document.getElementById('netWealthResult').textContent = formatCurrency(data.netWealthAtPeriodEnd);
+            }
+
+            // Update guidance alert
+            const alertBox = document.getElementById('guidanceAlert');
+            const alertMessage = document.getElementById('alertMessage');
+            alertMessage.innerHTML = data.guidanceMessage;
+
+            if (data.status === "success") {
+                alertBox.className = 'alert-box alert-success';
+            } else if (data.status === "not_achievable") {
+                alertBox.className = 'alert-box alert-warning';
+            } else if (data.status === "error") {
+                alertBox.className = 'alert-box alert-danger';
+            }
+            alertBox.classList.remove('hidden');
+
+            document.getElementById('detailedInsights').innerHTML = `<p>${data.recommendation}</p>`;
+
+            updateComparisonChart(goal, data);
+        }
+
+        // --- Main Calculation Trigger ---
+        async function performCalculation() {
+            const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+            const monthlyBudget = parseFloat(document.getElementById('monthlyBudget').value);
+            const riskAppetite = document.getElementById('riskAppetite').value;
+            const allocationGoal = document.getElementById('allocationGoal').value;
+            const optimizationPeriodYears = parseFloat(document.getElementById('optimizationPeriod').value);
+
+            // Basic input validation before calling backend
+            if (isNaN(loanAmount) || isNaN(monthlyBudget) || loanAmount <= 0 || monthlyBudget <= 0) {
+                displayDanger("Please enter valid positive numbers for Loan Amount and Monthly Budget.");
+                clearResults();
+                return;
+            }
+            if (allocationGoal === 'maximizeGrowth' && (isNaN(optimizationPeriodYears) || optimizationPeriodYears <= 0)) {
+                displayDanger("Please enter a valid positive number for Optimization Period.");
+                clearResults();
+                return;
+            }
+
+            let endpoint;
+            let requestData = { loanAmount, monthlyBudget, riskAppetite };
+
+            if (allocationGoal === 'netZeroInterest') {
+                endpoint = '/api/calculate-net-zero-interest';
+            } else if (allocationGoal === 'minTimeNetZero') {
+                endpoint = '/api/calculate-min-time-net-zero';
+            } else if (allocationGoal === 'maximizeGrowth') {
+                endpoint = '/api/calculate-max-growth';
+                requestData.optimizationPeriodYears = optimizationPeriodYears;
+            } else {
+                displayDanger("Invalid allocation goal selected.");
+                clearResults();
+                return;
+            }
+
+            try {
+                const result = await callBackendAPI(endpoint, requestData);
+                displayResults(allocationGoal, result);
+            } catch (error) {
+                console.error("Calculation failed:", error);
+                displayDanger("An error occurred during calculation. Please ensure your backend server is running and accessible.");
+                clearResults();
+            }
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sync slider and number input for Loan Amount
+            const loanAmountInput = document.getElementById('loanAmount');
+            const loanAmountSlider = document.getElementById('loanAmountSlider');
+
+            loanAmountInput.addEventListener('input', () => {
+                loanAmountSlider.value = loanAmountInput.value;
+            });
+            loanAmountSlider.addEventListener('input', () => {
+                loanAmountInput.value = loanAmountSlider.value;
+            });
+
+            // Show/hide Optimization Period based on Allocation Goal
+            document.getElementById('allocationGoal').addEventListener('change', (event) => {
+                if (event.target.value === 'maximizeGrowth') {
+                    document.getElementById('optimizationPeriodContainer').classList.remove('hidden');
+                } else {
+                    document.getElementById('optimizationPeriodContainer').classList.add('hidden');
+                }
+                clearResults(); // Clear results when goal changes
+            });
+
+            // Trigger calculation on button click
+            document.getElementById('calculateBtn').addEventListener('click', performCalculation);
+
+            // Initial state setup
+            clearResults();
+            document.getElementById('chartMessage').classList.remove('hidden'); // Ensure chart message is visible initially
+        });
+    </script>
+</body>
+</html>
+
