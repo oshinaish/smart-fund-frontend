@@ -1,798 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pai - Smart Fund Allocation</title>
-    <!-- Tailwind CSS CDN for quick and responsive styling -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Fund Allocation Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwind CSS configuration for custom colors, fonts, and extended properties
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif'], // Define Inter font
-                        albert_sans: ['"Albert Sans"', 'sans-serif'], // Define Albert Sans font
-                    },
-                    colors: {
-                        primary: '#4F46E5', // A vibrant blue for primary actions
-                        secondary: '#6EE7B7', // A lighter green for accents
-                        background: '#F9FAFB', // Light gray background (no longer used for body, but kept for other elements if needed)
-                        card: '#FFFFFF', // White for cards/panels
-                        textdark: '#1F2937', // Dark gray for main text
-                        textlight: '#4B5563', // Lighter gray for secondary text
-                        danger: '#EF4444', // Red for alerts/errors
-                        success: '#22C55E', // Green for positive alerts
-                        warning: '#F59E0B', // Orange for warnings
-                        // Custom colors for the boxes
-                        input_box_fill: '#53db9e', // Base color for the box fill
-                        input_text_color: '#1b9272', // Base color for the text and seekbar fill
-                        seekbar_track_right: '#EDFOEF', // Color for the right side of the seekbar track
-                        seekbar_thumb: '#F5F5FA', // Color for the seekbar thumb
-                    },
-                    boxShadow: {
-                        // Custom shadow for the boxes: 0 0 4px rgba(0, 0, 0, 0.04)
-                        'custom-input': '0px 0px 4px rgba(0, 0, 0, 0.04)',
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts - Inter for a modern, clean look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Google Fonts - Albert Sans for PAi title and other text -->
-    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;800&display=swap" rel="stylesheet">
-    <!-- Chart.js CDN for interactive charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <style>
-        /* Custom styles for the scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+  </head>
+  <body class="bg-gray-100 min-h-screen text-gray-800">
+    <div class="max-w-4xl mx-auto p-6">
+      <h1 class="text-2xl font-bold mb-4">Smart Fund Allocation Tool</h1>
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-            cursor: pointer;
-        }
-
-        /* Ensure input focus is visually distinct */
-        input[type="number"]:focus, select:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3); /* Primary color shadow */
-            border-color: #4F46E5; /* Primary color border */
-        }
-
-        /* Custom slider track and thumb styles */
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            height: 2px; /* Fixed height */
-            background: transparent; /* Make default track transparent */
-            outline: none;
-            border-radius: 5px;
-            transition: opacity .2s;
-            position: relative; /* Needed for ::before pseudo-element positioning */
-        }
-
-        /* Webkit (Chrome, Safari) specific styles */
-        input[type="range"]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 2px; /* Fixed height */
-            background: linear-gradient(to right, var(--tw-colors-input_text_color) var(--range-progress, 0%), var(--tw-colors-seekbar_track_right) var(--range-progress, 0%));
-            border-radius: 5px;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px; /* Changed to 14px */
-            height: 14px; /* Changed to 14px */
-            background: var(--tw-colors-seekbar_thumb); /* Thumb color from Tailwind config */
-            border-radius: 50%;
-            cursor: grab;
-            box-shadow: none; /* Removed box-shadow for no strokes/effects */
-            margin-top: -6px; /* Adjusted margin-top to center 14px thumb on 2px track */
-        }
-
-        /* Mozilla (Firefox) specific styles */
-        input[type="range"]::-moz-range-track {
-            width: 100%;
-            height: 2px; /* Fixed height */
-            background: var(--tw-colors-seekbar_track_right); /* Right side color */
-            border-radius: 5px;
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 14px; /* Changed to 14px */
-            height: 14px; /* Changed to 14px */
-            background: var(--tw-colors-seekbar_thumb); /* Thumb color */
-            border-radius: 50%;
-            cursor: grab;
-            box-shadow: none; /* Removed box-shadow for no strokes/effects */
-        }
-
-        /* Fill color for the track before the thumb for Firefox */
-        input[type="range"]::-moz-range-progress {
-            background-color: var(--tw-colors-input_text_color); /* Left side color */
-            border-radius: 5px;
-        }
-
-
-        input[type="range"]:active::-webkit-slider-thumb {
-            cursor: grabbing;
-        }
-        input[type="range"]:active::-moz-range-thumb {
-            cursor: grabbing;
-        }
-
-        /* Styling for the alert box */
-        .alert-box {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            margin-top: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .alert-box.alert-success {
-            background-color: #D1FAE5; /* green-100 */
-            color: #065F46; /* green-800 */
-            border: 1px solid #34D399; /* green-400 */
-        }
-        .alert-box.alert-warning {
-            background-color: #FEF3C7; /* yellow-100 */
-            color: #92400E; /* yellow-800 */
-            border: 1px solid #FBBF24; /* yellow-400 */
-        }
-        .alert-box.alert-danger {
-            background-color: #FEE2E2; /* red-100 */
-            color: #991B1B; /* red-800 */
-            border: 1px solid #F87171; /* red-400 */
-        }
-
-        /* Custom styling for the goal selection buttons */
-        .goal-button {
-            @apply flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all duration-200;
-            @apply border border-gray-200 bg-white shadow-sm; /* Default state */
-        }
-        .goal-button.selected {
-            @apply border-primary bg-primary/5 shadow-md; /* Selected state */
-        }
-        .goal-button:hover:not(.selected) {
-            @apply bg-gray-50; /* Hover state for unselected */
-        }
-    </style>
-</head>
-<body class="font-inter bg-white text-textdark min-h-screen flex flex-col">
-
-    <!-- Header Section -->
-    <header class="bg-card shadow-sm h-[68px] pl-[27px] pr-6 md:pr-8 flex items-center justify-between z-10">
-        <div class="flex items-center">
-            <!-- Logo Image -->
-            <img src="uploaded:Untitled (5).png-9333cd27-2f3e-45e7-8881-e5891066559e" onerror="this.onerror=null;this.src='https://placehold.co/27x23/8A2BE2/FFFFFF?text=Logo';" alt="Pai Logo" class="w-[27px] h-[23px] rounded-lg">
-            <h1 class="text-xl font-extrabold text-textdark font-albert_sans ml-[22px]">Pai</h1>
+      <!-- Goal Selector -->
+      <div class="mb-6">
+        <p class="font-semibold mb-2">Select Your Goal:</p>
+        <div class="flex flex-wrap gap-4">
+          <button class="goal-btn px-4 py-2 rounded border border-gray-300 hover:bg-blue-100" data-goal="net_zero">Achieve Net Zero Interest</button>
+          <button class="goal-btn px-4 py-2 rounded border border-gray-300 hover:bg-blue-100" data-goal="min_time_net_zero">Minimum Time to Net Zero</button>
+          <button class="goal-btn px-4 py-2 rounded border border-gray-300 hover:bg-blue-100" data-goal="maximize_growth">Maximize Growth in X Years</button>
         </div>
-        <!-- Navigation (removed About and Contact links) -->
-        <nav class="hidden md:block">
-            <ul class="flex space-x-6">
-                <!-- Navigation items can be added here if needed in the future -->
-            </ul>
-        </nav>
-    </header>
+      </div>
 
-    <!-- Main Content Area - Single column layout for inputs and results -->
-    <main class="flex-1 flex flex-col space-y-8 overflow-hidden pt-[26px]">
+      <!-- Inputs -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium mb-1">Loan Amount (₹)</label>
+          <input id="loanAmount" type="number" class="w-full px-3 py-2 border rounded" placeholder="e.g. 5000000" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Monthly Budget (₹)</label>
+          <input id="monthlyBudget" type="number" class="w-full px-3 py-2 border rounded" placeholder="e.g. 60000" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Loan Tenure (Years)</label>
+          <input id="loanTenure" type="number" class="w-full px-3 py-2 border rounded" value="30" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Loan Interest Rate (%)</label>
+          <input id="loanRate" type="number" class="w-full px-3 py-2 border rounded" value="8" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Investment Tenure (Years)</label>
+          <input id="investmentTenure" type="number" class="w-full px-3 py-2 border rounded" value="30" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Risk Appetite</label>
+          <select id="riskAppetite" class="w-full px-3 py-2 border rounded">
+            <option value="low">Low</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </div>
 
-        <!-- Main Input/Calculation Section -->
-        <section class="px-[26px] flex flex-col overflow-y-auto">
-            <h2 class="text-[21px] font-normal text-textdark font-albert_sans mb-6">Smart Loan Calculator</h2>
+      <!-- Calculate Button -->
+      <button id="calculateBtn" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Calculate</button>
 
-            <!-- Loan Amount Input Group -->
-            <div class="mb-5">
-                <div class="flex items-center justify-between w-[273px]">
-                    <label for="loanAmount" class="block text-sm font-normal text-textlight font-albert_sans">Loan Amount</label>
-                    <div class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">
-                        <input type="number" id="loanAmount" value="5000000" min="100000" max="50000000" step="100000"
-                               class="w-full bg-transparent border-none focus:ring-0 text-input_text_color text-right p-0 m-0 font-albert_sans font-bold text-base">
-                    </div>
-                </div>
-                <input type="range" id="loanAmountSlider" value="5000000" min="100000" max="50000000" step="100000"
-                       class="w-[310px] mt-[18px]">
-            </div>
+      <!-- Results Section -->
+      <div id="results" class="mt-8 hidden">
+        <h2 class="text-xl font-bold mb-4">Results</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="p-4 bg-white rounded shadow">
+            <p class="text-sm text-gray-500">Monthly EMI</p>
+            <p id="emiResult" class="text-xl font-semibold">-</p>
+          </div>
+          <div class="p-4 bg-white rounded shadow">
+            <p class="text-sm text-gray-500">Monthly Investment Needed</p>
+            <p id="investmentResult" class="text-xl font-semibold">-</p>
+          </div>
+          <div class="p-4 bg-white rounded shadow">
+            <p class="text-sm text-gray-500">Total Loan Interest Payable</p>
+            <p id="interestResult" class="text-xl font-semibold">-</p>
+          </div>
+          <div class="p-4 bg-white rounded shadow">
+            <p class="text-sm text-gray-500">Estimated Investment Future Value</p>
+            <p id="futureValueResult" class="text-xl font-semibold">-</p>
+          </div>
+        </div>
 
-            <!-- Monthly Budget Input Group -->
-            <div class="mb-5">
-                <div class="flex items-center justify-between w-[273px]">
-                    <label for="monthlyBudget" class="block text-sm font-normal text-textlight font-albert_sans">Monthly Budget</label>
-                    <div class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">
-                        <input type="number" id="monthlyBudget" value="70000" min="10000" step="1000"
-                               class="w-full bg-transparent border-none focus:ring-0 text-input_text_color text-right p-0 m-0 font-albert_sans font-bold text-base">
-                    </div>
-                </div>
-                <input type="range" id="monthlyBudgetSlider" value="70000" min="10000" step="1000"
-                       class="w-[310px] mt-[18px]">
-            </div>
+        <div class="mt-4 text-sm" id="guidanceMessage"></div>
 
-            <!-- Allocation Goal Selection Buttons -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <button class="goal-button" data-goal="netZeroInterest">
-                    <svg class="w-8 h-8 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V9m0 3v2m0 3.5V17m-4 4h8a2 2 0 002-2V9a2 2 0 00-2-2H8a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span class="text-sm font-semibold text-textdark">Recover Interest</span>
-                </button>
-                <button class="goal-button" data-goal="minTimeNetZero">
-                    <svg class="w-8 h-8 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="text-sm font-semibold text-textdark">Minimize Time to 0 Interest</span>
-                </button>
-                <button class="goal-button" data-goal="maximizeGrowth">
-                    <svg class="w-8 h-8 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    <span class="text-sm font-semibold text-textdark">Maximise Growth</span>
-                </button>
-            </div>
-
-            <!-- Fixed Loan Parameters & Risk Appetite / Investment Tenure -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mb-8">
-                <!-- Loan Rate -->
-                <div class="mb-5">
-                    <div class="flex items-center justify-between w-[273px]">
-                        <label class="block text-sm font-normal text-textlight font-albert_sans">Loan: Rate of interest (p.a.)</label>
-                        <p id="loanInterestRateDisplay" class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">8<span class="font-normal">%</span></p>
-                    </div>
-                    <input type="range" id="loanInterestRateSlider" value="8" min="1" max="30" step="0.1"
-                           class="w-[310px] mt-[18px]">
-                </div>
-                <!-- Loan Tenure -->
-                <div class="mb-5">
-                    <div class="flex items-center justify-between w-[273px]">
-                        <label class="block text-sm font-normal text-textlight font-albert_sans">Loan Tenure</label>
-                        <p id="loanTenureDisplay" class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">30 <span class="font-normal">Yr</span></p>
-                    </div>
-                    <input type="range" id="loanTenureSlider" value="30" min="1" max="30"
-                           class="w-[310px] mt-[18px]">
-                </div>
-                <!-- Risk Appetite -->
-                <div class="mb-5">
-                    <div class="flex items-center justify-between w-[273px]">
-                        <label for="riskAppetite" class="block text-sm font-normal text-textlight font-albert_sans">Investment: Risk Appetite</label>
-                        <div class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">
-                            <input type="number" id="riskAppetite" value="9" min="1" max="30" step="0.1"
-                                   class="w-full bg-transparent border-none focus:ring-0 text-input_text_color text-right p-0 m-0 font-albert_sans font-bold text-base">
-                            <span class="font-normal text-input_text_color pl-1">%</span>
-                        </div>
-                    </div>
-                    <input type="range" id="riskAppetiteSlider" value="9" min="1" max="30" step="0.1"
-                           class="w-[310px] mt-[18px]">
-                </div>
-                <!-- Investment Tenure (dynamic, but fixed for some goals) -->
-                <div id="investmentTenureContainer" class="mb-5">
-                    <div class="flex items-center justify-between w-[273px]">
-                        <label for="investmentTenure" class="block text-sm font-normal text-textlight font-albert_sans">Investment Tenure</label>
-                        <div class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">
-                            <input type="number" id="investmentTenure" value="30" min="1" max="30"
-                                   class="w-full bg-transparent border-none focus:ring-0 text-input_text_color text-right p-0 m-0 font-albert_sans font-bold text-base">
-                            <span class="font-normal text-input_text_color pl-1">Yr</span>
-                        </div>
-                    </div>
-                    <input type="range" id="investmentTenureSlider" value="30" min="1" max="30"
-                           class="w-[310px] mt-[18px]">
-                </div>
-            </div>
-
-            <!-- Monthly EMI & Monthly Investment Outputs -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mb-8">
-                <!-- Monthly EMI -->
-                <div class="flex items-center justify-between w-[273px]">
-                    <label class="block text-sm font-normal text-textlight mb-2">Monthly EMI</label>
-                    <p id="emiResult" class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">₹ 0</p>
-                </div>
-                <!-- Monthly Investment -->
-                <div class="flex items-center justify-between w-[273px]">
-                    <label class="block text-sm font-normal text-textlight mb-2">Monthly Investment</label>
-                    <p id="monthlyInvestmentResult" class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">₹ 0</p>
-                </div>
-            </div>
-
-            <!-- Optimization Period (conditionally displayed) -->
-            <div id="optimizationPeriodContainer" class="mb-6">
-                <div class="flex items-center justify-between w-[273px]">
-                    <label for="optimizationPeriod" class="block text-sm font-normal text-textlight font-albert_sans">Optimization Period</label>
-                    <div class="w-[114px] h-[29px] p-2 rounded-[2px] text-base font-bold bg-input_box_fill bg-opacity-10 text-input_text_color text-right shadow-custom-input flex items-center justify-end font-albert_sans">
-                        <input type="number" id="optimizationPeriod" value="10" min="1" max="30"
-                               class="w-full bg-transparent border-none focus:ring-0 text-input_text_color text-right p-0 m-0 font-albert_sans font-bold text-base">
-                        <span class="font-normal text-input_text_color pl-1">Yr</span>
-                    </div>
-                </div>
-                <input type="range" id="optimizationPeriodSlider" value="10" min="1" max="30"
-                       class="w-[310px] mt-[18px]">
-            </div>
-
-            <!-- Action Button (kept for explicit trigger, can be removed if auto-calc on input change is preferred) -->
-            <div class="mt-auto pt-4 border-t border-gray-200 flex justify-center">
-                <button id="calculateBtn" class="bg-primary text-white py-3 px-6 rounded-lg font-medium text-lg shadow-md hover:bg-indigo-600 transition-colors duration-200">
-                    Calculate Allocation
-                </button>
-            </div>
-        </section>
-
-        <!-- Results & Guidance Section (formerly right panel, now integrated below inputs) -->
-        <section class="px-[26px] py-6 flex flex-col overflow-y-auto">
-            <h2 class="text-xl md:text-2xl font-semibold mb-6 text-textdark">Results & Smart Allocation</h2>
-
-            <!-- Loading Indicator -->
-            <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center p-8">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
-                <p class="mt-4 text-lg text-primary">Calculating...</p>
-            </div>
-
-            <!-- Key Metrics Display -->
-            <div id="resultsDisplay" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div id="totalInterestContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm">
-                    <h3 class="text-sm font-semibold text-textlight mb-2">Total Loan Interest Payable</h3>
-                    <p id="totalInterestResult" class="text-xl font-bold text-textdark">₹ 0</p>
-                </div>
-                <div id="investmentFVContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm">
-                    <h3 class="text-sm font-semibold text-textlight mb-2">Estimated Investment Future Value</h3>
-                    <p id="investmentFutureValueResult" class="text-xl font-bold text-textdark">₹ 0</p>
-                </div>
-                <div id="minTimeContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm hidden">
-                    <h3 class="text-sm font-semibold text-textlight mb-2">Minimum Time to Net Zero</h3>
-                    <p id="minTimeResult" class="text-xl font-bold text-textdark">-- Years</p>
-                </div>
-                <div id="netWealthContainer" class="bg-gray-50 rounded-lg p-4 shadow-sm hidden">
-                    <h3 class="text-sm font-semibold text-textlight mb-2">Net Wealth at Period End</h3>
-                    <p id="netWealthResult" class="text-xl font-bold text-textdark">₹ 0</p>
-                </div>
-            </div>
-
-            <!-- Smart Guidance Alert -->
-            <div id="guidanceAlert" class="alert-box alert-warning hidden">
-                <!-- Icon will be dynamically added here -->
-                <p id="alertMessage"></p>
-            </div>
-
-            <!-- Chart for Visual Comparison -->
-            <div class="flex-1 min-h-[300px] flex items-center justify-center relative mt-6">
-                <canvas id="comparisonChart" class="w-full h-full"></canvas>
-                <div id="chartMessage" class="absolute bg-white bg-opacity-90 p-4 rounded-lg shadow-lg text-center text-textlight text-lg hidden">
-                    Select an Allocation Goal and input your parameters to see projections here!
-                </div>
-            </div>
-
-            <!-- Detailed Insights -->
-            <div class="mt-8">
-                <h3 class="text-lg font-semibold text-textdark mb-3">Detailed Insights:</h3>
-                <div id="detailedInsights" class="bg-gray-50 rounded-lg p-4 text-textlight leading-relaxed">
-                    <p>Select an allocation goal and input your parameters to receive tailored financial guidance.</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer Section -->
-    <footer class="bg-textdark text-gray-300 py-4 px-8 text-center text-sm">
-        &copy; 2025 Pai Smart Fund Allocation Tool. All rights reserved.
-    </footer>
+        <div class="mt-6">
+          <canvas id="comparisonChart"></canvas>
+        </div>
+      </div>
+    </div>
 
     <script>
-        // --- Global Variables and Constants ---
-        let comparisonChartInstance; // Stores the Chart.js instance
-        // Removed FIXED_LOAN_INTEREST_RATE and FIXED_LOAN_TENURE_YEARS as they are now dynamic inputs
-        // riskAppetiteReturns is now handled by direct input from the user
+      let selectedGoal = "net_zero";
 
-        // --- Helper Function: Format Currency ---
-        const formatCurrency = (amount) => {
-            return new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-                maximumFractionDigits: 0
-            }).format(amount);
+      document.querySelectorAll(".goal-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".goal-btn").forEach((b) => b.classList.remove("bg-blue-200"));
+          btn.classList.add("bg-blue-200");
+          selectedGoal = btn.dataset.goal;
+        });
+      });
+
+      document.getElementById("calculateBtn").addEventListener("click", async () => {
+        const payload = {
+          loan_amount: parseFloat(document.getElementById("loanAmount").value),
+          monthly_budget: parseFloat(document.getElementById("monthlyBudget").value),
+          loan_tenure_years: parseFloat(document.getElementById("loanTenure").value),
+          loan_interest_rate: parseFloat(document.getElementById("loanRate").value),
+          investment_tenure_years: parseFloat(document.getElementById("investmentTenure").value),
+          risk_appetite: document.getElementById("riskAppetite").value,
+          goal: selectedGoal,
         };
 
-        // --- Real Backend API Call (Replaces the mock callBackendAPI function) ---
-        async function callBackendAPI(endpoint, data) {
-            console.log(`Making API call to: ${endpoint} with data:`, data);
-            document.getElementById('loadingIndicator').classList.remove('hidden');
-            document.getElementById('resultsDisplay').classList.add('hidden');
-            document.getElementById('guidanceAlert').classList.add('hidden');
-            document.getElementById('chartMessage').classList.add('hidden');
-            document.getElementById('detailedInsights').innerHTML = '<p>Calculating your personalized allocation...</p>';
-
-            try {
-                // IMPORTANT: For local testing, keep this as http://localhost:5000
-                // When deployed, you would replace 'http://localhost:5000' with your actual Render backend URL
-                const response = await fetch(`http://localhost:5000${endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data),
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                }
-
-                const responseData = await response.json();
-                console.log("Backend response:", responseData);
-
-                document.getElementById('loadingIndicator').classList.add('hidden');
-                document.getElementById('resultsDisplay').classList.remove('hidden');
-
-                return responseData;
-
-            } catch (error) {
-                console.error("Calculation failed:", error);
-                displayDanger("An error occurred during calculation. Please ensure your backend server is running and accessible.");
-                clearResults();
-            }
-        }
-
-        /**
-         * Clears all calculation results and hides alerts.
-         */
-        function clearResults() {
-            document.getElementById('emiResult').textContent = formatCurrency(0);
-            document.getElementById('monthlyInvestmentResult').textContent = formatCurrency(0);
-            document.getElementById('totalInterestResult').textContent = formatCurrency(0);
-            document.getElementById('investmentFutureValueResult').textContent = formatCurrency(0);
-            document.getElementById('minTimeResult').textContent = '-- Years';
-            document.getElementById('netWealthResult').textContent = formatCurrency(0);
-
-            // Hide/show specific result containers based on goal
-            document.getElementById('totalInterestContainer').classList.remove('hidden');
-            document.getElementById('investmentFVContainer').classList.remove('hidden');
-            document.getElementById('minTimeContainer').classList.add('hidden');
-            document.getElementById('netWealthContainer').classList.add('hidden');
-
-
-            document.getElementById('guidanceAlert').classList.add('hidden');
-            document.getElementById('detailedInsights').innerHTML = '<p>Select an allocation goal and input your parameters to receive tailored financial guidance.</p>';
-            document.getElementById('chartMessage').classList.remove('hidden'); // Show chart message
-            if (comparisonChartInstance) {
-                comparisonChartInstance.destroy(); // Destroy existing chart
-                comparisonChartInstance = null;
-            }
-        }
-
-        /**
-         * Updates the Chart.js visualization based on the selected goal.
-         */
-        function updateComparisonChart(goal, data) {
-            const ctx = document.getElementById('comparisonChart').getContext('2d');
-            let chartConfig = {};
-
-            document.getElementById('chartMessage').classList.add('hidden'); // Hide message if data is present
-
-            if (comparisonChartInstance) {
-                comparisonChartInstance.destroy(); // Destroy existing chart
-            }
-
-            if (data.status === "not_achievable" || (data.chartData.loanInterest === 0 && data.chartData.investmentGain === 0 && data.chartData.investmentFV === 0 && data.chartData.remainingLoan === 0)) {
-                document.getElementById('chartMessage').classList.remove('hidden');
-                return;
-            }
-
-            if (goal === 'netZeroInterest' || goal === 'minTimeNetZero') {
-                chartConfig = {
-                    type: 'bar',
-                    data: {
-                        labels: ['Loan Interest Paid', 'Investment Wealth Gained'],
-                        datasets: [{
-                            label: 'Amount (₹)',
-                            data: [data.chartData.loanInterest, data.chartData.investmentGain],
-                            backgroundColor: [
-                                'rgba(239, 68, 68, 0.7)', // Red for interest
-                                'rgba(34, 197, 94, 0.7)'  // Green for wealth gained
-                            ],
-                            borderColor: [
-                                'rgba(239, 68, 68, 1)',
-                                'rgba(34, 197, 94, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            title: { display: true, text: 'Loan Interest vs. Investment Gain', font: { size: 16 } },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) { label += ': '; }
-                                        if (context.parsed.y !== null) { label += formatCurrency(context.parsed.y); }
-                                        return label;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: 'Amount (₹)' },
-                                ticks: { callback: formatCurrency }
-                            },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                };
-            } else if (goal === 'maximizeGrowth') {
-                chartConfig = {
-                    type: 'bar',
-                    data: {
-                        labels: ['Investment Future Value', 'Remaining Loan Balance'],
-                        datasets: [{
-                            label: 'Amount (₹)',
-                            data: [data.chartData.investmentFV, data.chartData.remainingLoan],
-                            backgroundColor: [
-                                'rgba(34, 197, 94, 0.7)', // Green for investment FV
-                                'rgba(79, 70, 229, 0.7)'  // Primary blue for remaining loan
-                            ],
-                            borderColor: [
-                                'rgba(34, 197, 94, 1)',
-                                'rgba(79, 70, 229, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            title: { display: true, text: `Financial Position in ${data.optimizationPeriodYears} Years`, font: { size: 16 } },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) { label += ': '; }
-                                        if (context.parsed.y !== null) { label += formatCurrency(context.parsed.y); }
-                                        return label;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: 'Amount (₹)' },
-                                ticks: { callback: formatCurrency }
-                            },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                };
-            }
-
-            comparisonChartInstance = new Chart(ctx, chartConfig);
-        }
-
-        /**
-         * Updates the UI with results from the backend and displays appropriate guidance.
-         */
-        function displayResults(goal, data) {
-            clearResults(); // Clear previous results and hide specific containers
-
-            document.getElementById('emiResult').textContent = formatCurrency(data.monthlyEMI);
-            document.getElementById('monthlyInvestmentResult').textContent = formatCurrency(data.monthlyInvestment);
-
-            if (goal === 'netZeroInterest' || goal === 'minTimeNetZero') {
-                document.getElementById('totalInterestContainer').classList.remove('hidden');
-                document.getElementById('investmentFVContainer').classList.remove('hidden');
-                document.getElementById('totalInterestResult').textContent = formatCurrency(data.totalLoanInterestPayable);
-                document.getElementById('investmentFutureValueResult').textContent = formatCurrency(data.estimatedInvestmentFutureValue);
-            }
-
-            if (goal === 'minTimeNetZero') {
-                document.getElementById('minTimeContainer').classList.remove('hidden');
-                document.getElementById('minTimeResult').textContent = data.minTimeYears !== -1 ? `${data.minTimeYears} Years` : 'Not Achievable';
-            }
-
-            if (goal === 'maximizeGrowth') {
-                document.getElementById('totalInterestContainer').classList.add('hidden'); // Hide if not relevant for this goal
-                document.getElementById('investmentFVContainer').classList.remove('hidden');
-                document.getElementById('netWealthContainer').classList.remove('hidden');
-                document.getElementById('investmentFutureValueResult').textContent = formatCurrency(data.estimatedInvestmentFutureValue);
-                document.getElementById('netWealthResult').textContent = formatCurrency(data.netWealthAtPeriodEnd);
-            }
-
-            // Update guidance alert
-            const alertBox = document.getElementById('guidanceAlert');
-            const alertMessage = document.getElementById('alertMessage');
-            alertMessage.innerHTML = data.guidanceMessage;
-
-            if (data.status === "success") {
-                alertBox.className = 'alert-box alert-success';
-            } else if (data.status === "not_achievable") {
-                alertBox.className = 'alert-box alert-warning';
-            } else if (data.status === "error") {
-                alertBox.className = 'alert-box alert-danger';
-            }
-            alertBox.classList.remove('hidden');
-
-            document.getElementById('detailedInsights').innerHTML = `<p>${data.recommendation}</p>`;
-
-            updateComparisonChart(goal, data);
-        }
-
-        // --- Main Calculation Trigger ---
-        async function performCalculation() {
-            const loanAmount = parseFloat(document.getElementById('loanAmount').value);
-            const monthlyBudget = parseFloat(document.getElementById('monthlyBudget').value);
-            const riskAppetite = parseFloat(document.getElementById('riskAppetite').value); // Parse as float
-            const allocationGoal = document.getElementById('allocationGoal').value;
-            const optimizationPeriodYears = parseFloat(document.getElementById('optimizationPeriod').value);
-
-            // Basic input validation before calling backend
-            if (isNaN(loanAmount) || loanAmount <= 0) {
-                displayDanger("Please enter a valid positive number for Loan Amount.");
-                clearResults();
-                return;
-            }
-            if (isNaN(monthlyBudget) || monthlyBudget <= 0) {
-                displayDanger("Please enter a valid positive number for Monthly Budget.");
-                clearResults();
-                return;
-            }
-            if (isNaN(riskAppetite) || riskAppetite <= 0) { // Validate riskAppetite as number
-                displayDanger("Please enter a valid positive number for Risk Appetite.");
-                clearResults();
-                return;
-            }
-            if (allocationGoal === 'maximizeGrowth' && (isNaN(optimizationPeriodYears) || optimizationPeriodYears <= 0)) {
-                displayDanger("Please enter a valid positive number for Optimization Period.");
-                clearResults();
-                return;
-            }
-
-            let endpoint;
-            let requestData = { loanAmount, monthlyBudget, riskAppetite };
-
-            if (allocationGoal === 'netZeroInterest') {
-                endpoint = '/api/calculate-net-zero-interest';
-            } else if (allocationGoal === 'minTimeNetZero') {
-                endpoint = '/api/calculate-min-time-net-zero';
-            } else if (allocationGoal === 'maximizeGrowth') {
-                endpoint = '/api/calculate-max-growth';
-                requestData.optimizationPeriodYears = optimizationPeriodYears;
-            } else {
-                displayDanger("Invalid allocation goal selected.");
-                clearResults();
-                return;
-            }
-
-            try {
-                const result = await callBackendAPI(endpoint, requestData);
-                displayResults(allocationGoal, result);
-            } catch (error) {
-                console.error("Calculation failed:", error);
-                displayDanger("An error occurred during calculation. Please ensure your backend server is running and accessible.");
-                clearResults();
-            }
-        }
-
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Function to update seekbar progress
-            function updateSeekbarProgress(sliderId) {
-                const slider = document.getElementById(sliderId);
-                if (slider) { // Check if slider element exists
-                    const progress = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-                    slider.style.setProperty('--range-progress', `${progress}%`);
-                }
-            }
-
-            // Helper function to attach listeners to input-slider pairs
-            function setupSliderInput(inputId, sliderId) {
-                const inputElement = document.getElementById(inputId);
-                const sliderElement = document.getElementById(sliderId);
-
-                if (inputElement && sliderElement) {
-                    inputElement.addEventListener('input', () => {
-                        sliderElement.value = inputElement.value;
-                        updateSeekbarProgress(sliderId);
-                        performCalculation();
-                    });
-                    sliderElement.addEventListener('input', () => {
-                        inputElement.value = sliderElement.value;
-                        updateSeekbarProgress(sliderId);
-                        performCalculation();
-                    });
-                    // Initial update for progress
-                    updateSeekbarProgress(sliderId);
-                }
-            }
-
-            // Setup all input-slider pairs
-            setupSliderInput('loanAmount', 'loanAmountSlider');
-            setupSliderInput('monthlyBudget', 'monthlyBudgetSlider');
-            // For loanInterestRateDisplay and loanTenureDisplay, they are P tags, not inputs
-            // The sliders below them are just visual, not linked to an input value change
-            // So, we only need to update their progress initially.
-            const loanInterestRateSlider = document.getElementById('loanInterestRateSlider');
-            if (loanInterestRateSlider) updateSeekbarProgress('loanInterestRateSlider');
-
-            const loanTenureSlider = document.getElementById('loanTenureSlider');
-            if (loanTenureSlider) updateSeekbarProgress('loanTenureSlider');
-
-            setupSliderInput('riskAppetite', 'riskAppetiteSlider');
-            setupSliderInput('investmentTenure', 'investmentTenureSlider');
-            setupSliderInput('optimizationPeriod', 'optimizationPeriodSlider');
-
-
-            // Event listener for Allocation Goal buttons
-            document.querySelectorAll('.goal-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    // Remove 'selected' class from all buttons
-                    document.querySelectorAll('.goal-button').forEach(btn => btn.classList.remove('selected'));
-                    // Add 'selected' class to the clicked button
-                    button.classList.add('selected');
-
-                    const selectedGoal = button.dataset.goal;
-                    // Update the hidden select element's value to reflect the button choice
-                    document.getElementById('allocationGoal').value = selectedGoal;
-
-                    // Show/hide Optimization Period based on Allocation Goal
-                    if (selectedGoal === 'maximizeGrowth') {
-                        document.getElementById('optimizationPeriodContainer').classList.remove('hidden');
-                        document.getElementById('investmentTenureContainer').classList.remove('hidden');
-                        document.getElementById('investmentTenure').value = 10; // Default for maximize growth
-                        
-                        const invTenSlider = document.getElementById('investmentTenureSlider');
-                        if(invTenSlider) invTenSlider.value = 10;
-                        updateSeekbarProgress('investmentTenureSlider'); 
-                        
-                        const optPeriodSlider = document.getElementById('optimizationPeriodSlider');
-                        if(optPeriodSlider) optPeriodSlider.value = 10;
-                        updateSeekbarProgress('optimizationPeriodSlider'); 
-                    } else if (selectedGoal === 'netZeroInterest' || selectedGoal === 'minTimeNetZero') {
-                        document.getElementById('optimizationPeriodContainer').classList.add('hidden');
-                        document.getElementById('investmentTenureContainer').classList.add('hidden');
-                        document.getElementById('investmentTenure').value = FIXED_LOAN_TENURE_YEARS;
-                        
-                        const invTenSlider = document.getElementById('investmentTenureSlider');
-                        if(invTenSlider) invTenSlider.value = FIXED_LOAN_TENURE_YEARS;
-                        updateSeekbarProgress('investmentTenureSlider'); 
-                    }
-
-                    performCalculation(); // Trigger calculation on goal change
-                });
-            });
-
-            // Initial state setup
-            clearResults();
-            document.getElementById('chartMessage').classList.remove('hidden'); // Ensure chart message is visible initially
-            // Select the first goal button by default and trigger initial calculation
-            const defaultGoalButton = document.querySelector('.goal-button[data-goal="netZeroInterest"]');
-            if (defaultGoalButton) {
-                defaultGoalButton.classList.add('selected');
-                document.getElementById('allocationGoal').value = defaultGoalButton.dataset.goal;
-            }
-            
-            // Initial calls to update seekbar progress for all sliders that are present
-            // The setupSliderInput function already calls updateSeekbarProgress
-            // So, these explicit calls are mostly for elements that don't have an input field
-            // but still need their slider progress set (like fixed loan rate/tenure if they had sliders)
-            // Re-calling them here as a safety measure for initial render.
-            if (loanInterestRateSlider) updateSeekbarProgress('loanInterestRateSlider');
-            if (loanTenureSlider) updateSeekbarProgress('loanTenureSlider');
-
-            performCalculation(); // Perform initial calculation
+        const res = await fetch("https://smart-fund-backend-api.onrender.com/calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
+
+        const data = await res.json();
+
+        document.getElementById("results").classList.remove("hidden");
+        document.getElementById("emiResult").textContent = `₹ ${data.emi.toFixed(0)}`;
+        document.getElementById("investmentResult").textContent = `₹ ${data.monthly_investment.toFixed(0)}`;
+        document.getElementById("interestResult").textContent = `₹ ${data.total_interest.toFixed(0)}`;
+        document.getElementById("futureValueResult").textContent = `₹ ${data.future_value.toFixed(0)}`;
+        document.getElementById("guidanceMessage").textContent = data.message;
+
+        renderChart(data.total_interest, data.future_value);
+      });
+
+      function renderChart(loanInterest, investmentValue) {
+        const ctx = document.getElementById("comparisonChart").getContext("2d");
+        if (window.barChart) window.barChart.destroy();
+        window.barChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: ["Loan Interest", "Investment Gains"],
+            datasets: [
+              {
+                label: "Amount (₹)",
+                data: [loanInterest, investmentValue],
+                backgroundColor: ["#EF4444", "#10B981"],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+            },
+          },
+        });
+      }
     </script>
-</body>
+  </body>
 </html>
