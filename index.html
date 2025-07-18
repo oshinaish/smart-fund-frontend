@@ -1,154 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart Fund Allocation Tool</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-100 min-h-screen text-gray-800">
-    <div class="max-w-4xl mx-auto p-6">
-      <h1 class="text-2xl font-bold mb-4">Smart Fund Allocation Tool</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Fund Tool</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-900 font-sans">
 
-      <!-- Goal Selector -->
-      <div class="mb-6">
-        <p class="font-semibold mb-2">Select Your Goal:</p>
-        <div class="flex flex-wrap gap-4">
-          <button class="goal-btn px-4 py-2 rounded border border-gray-300 hover:bg-blue-100" data-goal="net_zero">Achieve Net Zero Interest</button>
-          <button class="goal-btn px-4 py-2 rounded border border-gray-300 hover:bg-blue-100" data-goal="min_time_net_zero">Minimum Time to Net Zero</button>
-          <button class="goal-btn px-4 py-2 rounded border border-gray-300 hover:bg-blue-100" data-goal="maximize_growth">Maximize Growth in X Years</button>
-        </div>
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <!-- Header -->
+    <h1 class="text-3xl font-semibold mb-6">Smart Fund Tool</h1>
+
+    <!-- Goal Selector -->
+    <div class="flex gap-4 mb-8">
+      <div class="flex-1 bg-white border-2 border-green-500 shadow-md rounded-xl p-4 text-center cursor-pointer">
+        <div class="text-xl font-semibold text-green-600">Max Loan</div>
       </div>
-
-      <!-- Inputs -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label class="block text-sm font-medium mb-1">Loan Amount (₹)</label>
-          <input id="loanAmount" type="number" class="w-full px-3 py-2 border rounded" placeholder="e.g. 5000000" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Monthly Budget (₹)</label>
-          <input id="monthlyBudget" type="number" class="w-full px-3 py-2 border rounded" placeholder="e.g. 60000" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Loan Tenure (Years)</label>
-          <input id="loanTenure" type="number" class="w-full px-3 py-2 border rounded" value="30" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Loan Interest Rate (%)</label>
-          <input id="loanRate" type="number" class="w-full px-3 py-2 border rounded" value="8" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Investment Tenure (Years)</label>
-          <input id="investmentTenure" type="number" class="w-full px-3 py-2 border rounded" value="30" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Risk Appetite</label>
-          <select id="riskAppetite" class="w-full px-3 py-2 border rounded">
-            <option value="low">Low</option>
-            <option value="moderate" selected>Moderate</option>
-            <option value="high">High</option>
-          </select>
-        </div>
+      <div class="flex-1 bg-gray-100 shadow-md rounded-xl p-4 text-center cursor-pointer">
+        <div class="text-xl font-medium">Max Investment</div>
       </div>
-
-      <!-- Calculate Button -->
-      <button id="calculateBtn" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Calculate</button>
-
-      <!-- Results Section -->
-      <div id="results" class="mt-8 hidden">
-        <h2 class="text-xl font-bold mb-4">Results</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="p-4 bg-white rounded shadow">
-            <p class="text-sm text-gray-500">Monthly EMI</p>
-            <p id="emiResult" class="text-xl font-semibold">-</p>
-          </div>
-          <div class="p-4 bg-white rounded shadow">
-            <p class="text-sm text-gray-500">Monthly Investment Needed</p>
-            <p id="investmentResult" class="text-xl font-semibold">-</p>
-          </div>
-          <div class="p-4 bg-white rounded shadow">
-            <p class="text-sm text-gray-500">Total Loan Interest Payable</p>
-            <p id="interestResult" class="text-xl font-semibold">-</p>
-          </div>
-          <div class="p-4 bg-white rounded shadow">
-            <p class="text-sm text-gray-500">Estimated Investment Future Value</p>
-            <p id="futureValueResult" class="text-xl font-semibold">-</p>
-          </div>
-        </div>
-
-        <div class="mt-4 text-sm" id="guidanceMessage"></div>
-
-        <div class="mt-6">
-          <canvas id="comparisonChart"></canvas>
-        </div>
+      <div class="flex-1 bg-gray-100 shadow-md rounded-xl p-4 text-center cursor-pointer">
+        <div class="text-xl font-medium">Balanced</div>
       </div>
     </div>
 
-    <script>
-      let selectedGoal = "net_zero";
+    <!-- Input + Output Grid -->
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Left Column (Inputs) -->
+      <div class="bg-gray-50 rounded-xl shadow p-6 space-y-6">
+        <!-- Loan Amount -->
+        <div>
+          <label class="block font-medium mb-2">Loan Amount</label>
+          <input type="range" min="0" max="10000000" value="5000000" class="w-full" />
+          <div class="mt-2 text-green-600 bg-green-100 inline-block px-4 py-1 rounded-md shadow-sm font-medium">₹50,00,000</div>
+        </div>
 
-      document.querySelectorAll(".goal-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(".goal-btn").forEach((b) => b.classList.remove("bg-blue-200"));
-          btn.classList.add("bg-blue-200");
-          selectedGoal = btn.dataset.goal;
-        });
-      });
+        <!-- Monthly Budget -->
+        <div>
+          <label class="block font-medium mb-2">Monthly Budget</label>
+          <input type="range" min="10000" max="300000" value="70000" class="w-full" />
+          <div class="mt-2 text-green-600 bg-green-100 inline-block px-4 py-1 rounded-md shadow-sm font-medium">₹70,000</div>
+        </div>
 
-      document.getElementById("calculateBtn").addEventListener("click", async () => {
-        const payload = {
-          loan_amount: parseFloat(document.getElementById("loanAmount").value),
-          monthly_budget: parseFloat(document.getElementById("monthlyBudget").value),
-          loan_tenure_years: parseFloat(document.getElementById("loanTenure").value),
-          loan_interest_rate: parseFloat(document.getElementById("loanRate").value),
-          investment_tenure_years: parseFloat(document.getElementById("investmentTenure").value),
-          risk_appetite: document.getElementById("riskAppetite").value,
-          goal: selectedGoal,
-        };
+        <!-- Interest Rate -->
+        <div>
+          <label class="block font-medium mb-2">Interest Rate (%)</label>
+          <input type="range" min="5" max="15" value="8" step="0.1" class="w-full" />
+          <div class="mt-2 text-green-600 bg-green-100 inline-block px-4 py-1 rounded-md shadow-sm font-medium">8%</div>
+        </div>
 
-        const res = await fetch("https://smart-fund-backend-api.onrender.com/calculate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        <!-- Loan Tenure -->
+        <div>
+          <label class="block font-medium mb-2">Tenure (Years)</label>
+          <input type="range" min="1" max="30" value="15" class="w-full" />
+          <div class="mt-2 text-green-600 bg-green-100 inline-block px-4 py-1 rounded-md shadow-sm font-medium">15 Years</div>
+        </div>
+      </div>
 
-        const data = await res.json();
+      <!-- Right Column (Output + Chart) -->
+      <div class="space-y-6">
+        <!-- Outputs -->
+        <div class="flex gap-4">
+          <div class="flex-1 flex items-center justify-between bg-white shadow rounded-xl p-4">
+            <div>
+              <div class="text-sm text-gray-500">Monthly EMI</div>
+              <div class="text-xl font-semibold text-green-600">₹45,000</div>
+            </div>
+            <img src="https://img.icons8.com/ios-filled/50/rupee.png" alt="EMI" class="h-6 w-6" />
+          </div>
 
-        document.getElementById("results").classList.remove("hidden");
-        document.getElementById("emiResult").textContent = `₹ ${data.emi.toFixed(0)}`;
-        document.getElementById("investmentResult").textContent = `₹ ${data.monthly_investment.toFixed(0)}`;
-        document.getElementById("interestResult").textContent = `₹ ${data.total_interest.toFixed(0)}`;
-        document.getElementById("futureValueResult").textContent = `₹ ${data.future_value.toFixed(0)}`;
-        document.getElementById("guidanceMessage").textContent = data.message;
+          <div class="flex-1 flex items-center justify-between bg-white shadow rounded-xl p-4">
+            <div>
+              <div class="text-sm text-gray-500">Monthly Investment</div>
+              <div class="text-xl font-semibold text-purple-600">₹25,000</div>
+            </div>
+            <img src="https://img.icons8.com/ios-filled/50/investment-portfolio.png" alt="Invest" class="h-6 w-6" />
+          </div>
+        </div>
 
-        renderChart(data.total_interest, data.future_value);
-      });
+        <!-- Pie Chart -->
+        <div class="bg-white shadow rounded-xl p-6">
+          <h2 class="text-lg font-semibold mb-4">EMI vs Investment</h2>
+          <canvas id="pieChart" class="w-full h-64"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      function renderChart(loanInterest, investmentValue) {
-        const ctx = document.getElementById("comparisonChart").getContext("2d");
-        if (window.barChart) window.barChart.destroy();
-        window.barChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: ["Loan Interest", "Investment Gains"],
-            datasets: [
-              {
-                label: "Amount (₹)",
-                data: [loanInterest, investmentValue],
-                backgroundColor: ["#EF4444", "#10B981"],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-            },
-          },
-        });
+  <!-- Chart.js Script -->
+  <script>
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['EMI', 'Investment'],
+        datasets: [{
+          label: 'Fund Split',
+          data: [45000, 25000],
+          backgroundColor: ['#14b8a6', '#8b5cf6'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
       }
-    </script>
-  </body>
+    });
+  </script>
+
+</body>
 </html>
